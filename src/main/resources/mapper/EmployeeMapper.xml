@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jackaroo.spring_boot_demo.mapper.EmployeeMapper">
+
+    <resultMap id="BaseResultMap" type="com.jackaroo.spring_boot_demo.pojo.Employee" >
+        <id column="emp_id" property="empId"/>
+        <result column="emp_number" property="empNumber"/>
+        <result column="name" property="name"/>
+        <result column="gender" property="gender" jdbcType="TINYINT"
+                typeHandler = "com.jackaroo.spring_boot_demo.typehandler.GenderTypeHandler"/>
+        <result column="phone" property="phone"/>
+        <result column="balance" property="balance"/>
+        <result column="status" property="status" jdbcType="TINYINT"
+                typeHandler="com.jackaroo.spring_boot_demo.typehandler.EmployeeStatusTypeHandler"/>
+        <result column="create_time" property="createTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="update_time" property="updateTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <association column="dept_id" property="department"
+                     select="com.jackaroo.spring_boot_demo.mapper.DepartmentMapper.getDepartmentByDeptId"/>
+    </resultMap>
+
+    <sql id="baseColumn">
+        emp_id, emp_number, `name`, gender, phone, balance, dept_id, status, create_time, update_time
+    </sql>
+    <sql id="tableName">hos_employee</sql>
+
+   <insert id="saveEmployee" parameterType="employee" useGeneratedKeys="true" keyProperty="empId">
+       insert into <include refid="tableName"/> (<include refid="baseColumn"/>)
+       value (null, #{empNumber}, #{name}
+       , #{gender, typeHandler=com.jackaroo.spring_boot_demo.typehandler.GenderTypeHandler}
+       , #{phone}, #{balance}, #{department.deptId}
+       , #{status, typeHandler=com.jackaroo.spring_boot_demo.typehandler.EmployeeStatusTypeHandler}
+       , unix_timestamp(now()) * 1000, unix_timestamp(now()) * 1000)
+   </insert>
+
+    <update id="updateEmployeeByPrimaryKeySelective" parameterType="employee">
+        update <include refid="tableName"/>
+        <set >
+            <if test="empNumber != null" >
+                emp_number = #{empNumber},
+            </if>
+            <if test="name != null" >
+                `name` = #{name},
+            </if>
+            <if test="gender != null" >
+                gender = #{gender, typeHandler=com.jackaroo.spring_boot_demo.typehandler.GenderTypeHandler},
+            </if>
+            <if test="phone != null" >
+                phone = #{phone},
+            </if>
+            <if test="balance != null" >
+                balance = #{balance},
+            </if>
+            <if test="department != null" >
+                dept_id = #{department.deptId},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=INTEGER, typeHandler=com.jackaroo.spring_boot_demo.typehandler.EmployeeStatusTypeHandler},
+            </if>
+            <if test="true" >
+                update_time = unix_timestamp(now()) * 1000,
+            </if>
+        </set>
+        where emp_id = #{empId}
+    </update>
+
+    <delete id="deleteEmployeeByPrimaryKey" parameterType="long">
+        delete from <include refid="tableName"/>
+        where emp_id = #{empId}
+    </delete>
+
+    <select id="getAllEmployee" parameterType="com.jackaroo.spring_boot_demo.util.EmployeeQueryCondition" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from <include refid="tableName"/>
+        <where>
+            <if test="keywords != null and keywords != ''">
+                or (emp_number = #{keywords} or `name` = #{keywords})
+            </if>
+            <if test="deptId != null">
+                and dept_id = #{deptId}
+            </if>
+            <if test="status != null">
+                and status = #{status, typeHandler=com.jackaroo.spring_boot_demo.typehandler.EmployeeStatusTypeHandler}
+            </if>
+        </where>
+    </select>
+
+    <select id="getEmployeeByEmpId" parameterType="long" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from <include refid="tableName"/>
+        where emp_id = #{empId}
+    </select>
+
+    <select id="getRowsCount" parameterType="long" resultType="long" >
+        select count(*) from <include refid="tableName"/>
+    </select>
+
+</mapper>

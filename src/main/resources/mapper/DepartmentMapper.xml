@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jackaroo.spring_boot_demo.mapper.DepartmentMapper">
+
+    <resultMap id="BaseResultMap" type="com.jackaroo.spring_boot_demo.pojo.Department" >
+        <id column="dept_id" property="deptId" jdbcType="INTEGER" javaType="java.lang.Long" />
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR" javaType="java.lang.String" />
+        <result column="dept_desc" property="deptDesc" jdbcType="VARCHAR" javaType="java.lang.String" />
+        <result column="dept_status" property="deptStatus" jdbcType="TINYINT"
+                typeHandler = "com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler"/>
+        <result column="create_time" property="createTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="update_time" property="updateTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+
+    <sql id="baseColumn">
+        dept_id, dept_name, dept_desc, dept_status, create_time, update_time
+    </sql>
+    <sql id="tableName">hos_department</sql>
+
+   <insert id="saveDepartment" parameterType="department" useGeneratedKeys="true" keyProperty="deptId">
+       insert into <include refid="tableName"/> (<include refid="baseColumn"/>)
+       value (null, #{deptName}, #{deptDesc}
+       , #{deptStatus, typeHandler=com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler}
+       , unix_timestamp(now()) * 1000, unix_timestamp(now()) * 1000)
+   </insert>
+
+    <update id="updateDepartmentByPrimaryKeySelective" parameterType="department">
+        update <include refid="tableName"/>
+        <set >
+            <if test="deptName != null" >
+                dept_name = #{deptName,jdbcType=INTEGER},
+            </if>
+            <if test="deptDesc != null" >
+                dept_desc = #{deptDesc,jdbcType=INTEGER},
+            </if>
+            <if test="deptStatus != null" >
+                dept_status = #{deptStatus,jdbcType=INTEGER, typeHandler=com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler},
+            </if>
+            <if test="updateTime != null" >
+                update_time = unix_timestamp(now()) * 1000,
+            </if>
+        </set>
+        where dept_id = #{deptId,jdbcType=INTEGER}
+    </update>
+
+    <delete id="deleteDepartmentByPrimaryKey" parameterType="long">
+        delete from <include refid="tableName"/>
+        where dept_id = #{deptId}
+    </delete>
+
+    <select id="getAllDepartment" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from <include refid="tableName"/>
+    </select>
+
+    <select id="getDepartmentsByStatus" parameterType="integer" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from <include refid="tableName"/>
+        where dept_status = #{status}
+    </select>
+
+    <select id="getDepartmentByDeptId" parameterType="long" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from <include refid="tableName"/>
+        where dept_id = #{deptId}
+    </select>
+
+</mapper>

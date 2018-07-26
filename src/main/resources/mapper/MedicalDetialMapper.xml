@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jackaroo.spring_boot_demo.mapper.MedicalDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.jackaroo.spring_boot_demo.pojo.MedicalDetail" >
+        <id column="medical_id" property="medicalId"/>
+        <result column="medical_number" property="medicalNumber"/>
+        <result column="amount" property="amount"/>
+        <result column="desc" property="desc"/>
+        <result column="status" property="status" jdbcType="TINYINT"
+                typeHandler="com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler"/>
+        <result column="create_time" property="createTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="update_time" property="updateTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <association column="emp_id" property="employee"
+                     select="com.jackaroo.spring_boot_demo.mapper.EmployeeMapper.getEmployeeByEmpId"/>
+        <association column="medical_cate_id" property="medicalCategory"
+                     select="com.jackaroo.spring_boot_demo.mapper.MedicalCategoryMapper.getMedicalCategoryByMedicalCateId"/>
+    </resultMap>
+
+    <sql id="baseColumn">
+        medical_id, medical_number, amount, `desc`, emp_id, medical_cate_id, status, create_time, update_time
+    </sql>
+    <sql id="tableName">hos_medical_detail</sql>
+
+   <insert id="saveMedicalDetail" parameterType="medicalDetail" useGeneratedKeys="true" keyProperty="medicalId">
+       insert into <include refid="tableName"/> (<include refid="baseColumn"/>)
+       value (null, #{medicalNumber}, #{amount}
+       , #{desc}, #{employee.empId}, #{medicalCategory.medicalCateId}
+       , #{status, typeHandler=com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler}
+       , unix_timestamp(now()) * 1000, unix_timestamp(now()) * 1000)
+   </insert>
+
+    <update id="updateMedicalDetailByPrimaryKeySelective" parameterType="medicalDetail">
+        update <include refid="tableName"/>
+        <set >
+            <if test="medicalNumber != null" >
+                medical_number = #{medicalNumber},
+            </if>
+            <if test="amount != null" >
+                `amount` = #{amount},
+            </if>
+            <if test="desc != null" >
+                `desc` = #{desc},
+            </if>
+            <if test="employee != null" >
+                emp_id = #{employee.empId},
+            </if>
+            <if test="medicalCategory != null" >
+                medical_cate_id = #{medicalCategory.medicalCateId},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=INTEGER, typeHandler=com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler},
+            </if>
+            <if test="updateTime != null" >
+                update_time = unix_timestamp(now()) * 1000,
+            </if>
+        </set>
+        where medical_id = #{medicalId}
+    </update>
+
+    <delete id="deleteMedicalDetailByPrimaryKey" parameterType="long">
+        delete from <include refid="tableName"/>
+        where medical_id = #{medicalId}
+    </delete>
+
+    <select id="getAllMedicalDetail" parameterType="com.jackaroo.spring_boot_demo.util.MedicalDetailQueryBean" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from <include refid="tableName"/>
+        <where>
+            <if test="keywords != null and keywords != ''">
+                or (medical_number = #{keywords})
+            </if>
+            <if test="medicalCateId != null">
+                and medical_cate_id = #{medicalCateId}
+            </if>
+            <if test="status != null">
+                and status = #{status, typeHandler=com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler}
+            </if>
+        </where>
+    </select>
+
+    <select id="getMedicalDetailByEmpId" parameterType="long" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from <include refid="tableName"/>
+        where medical_id = #{medicalId}
+    </select>
+
+    <select id="getRowsCount" resultType="long">
+        select count(*) from <include refid="tableName"/>
+    </select>
+
+    <select id="getRowsCountConditionally" parameterType="com.jackaroo.spring_boot_demo.util.MedicalDetailQueryBean" resultType="long">
+        select count(*) from <include refid="tableName"/>
+        <where>
+            <if test="keywords != null and keywords != ''">
+                or (medical_number = #{keywords})
+            </if>
+            <if test="medicalCateId != null">
+                and medical_cate_id = #{medicalCateId}
+            </if>
+            <if test="status != null">
+                and status = #{status, typeHandler=com.jackaroo.spring_boot_demo.typehandler.CommonStatusTypeHandler}
+            </if>
+        </where>
+    </select>
+
+</mapper>
