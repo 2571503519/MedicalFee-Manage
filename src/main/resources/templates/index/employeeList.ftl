@@ -77,7 +77,7 @@
                 <#list employeeVoList as employeeVo>
                 <tr>
                     <td><input type="checkbox" name="" lay-skin="primary" data-id="${employeeVo.empId}"></td>
-                    <td class="hidden-xs">${employeeVo_index+1 + (pageInfo.pageNumber-1) * pageInfo.pageSize}</td>
+                    <td class="hidden-xs">${employeeVo_index+1 + (pagination.currentPageNumber-1) * pagination.pageConfig.pageSize}</td>
                     <td>${employeeVo.name}</td>
                     <td>${employeeVo.empNumber}</td>
                     <td>${employeeVo.department.deptName}</td>
@@ -111,26 +111,26 @@
             </table>
             <div class="page-wrap">
                 <ul class="pagination">
-                    <#if (pageInfo.pageNumber == pageInfo.first)>
+                    <#if pagination.isFirstPage>
                     <li class="disabled"><span>«</span></li>
-                    <#else>
-                    <li><span><a href="/employeeList.html?page=${pageInfo.prev}">«</a></span></li>
+                    <#else >
+                    <li><a href="${pagination.prevTab.url}">«</a></li>
                     </#if>
-                    <li class="active"><span>${pageInfo.pageNumber}</span></li>
-                    <#if (pageInfo.pageNumber+1 <= pageInfo.last)>
-                        <li>
-                            <a href="/employeeList.html?page=${pageInfo.pageNumber+1}">${pageInfo.pageNumber+1}</a>
-                        </li>
-                    </#if>
-                    <#if (pageInfo.pageNumber+2 <= pageInfo.last)>
-                        <li>
-                            <a href="/employeeList.html?page=${pageInfo.pageNumber+2}">${pageInfo.pageNumber+2}</a>
-                        </li>
-                    </#if>
-                    <#if (pageInfo.pageNumber == pageInfo.last)>
+                    <#list pagination.tabList as tab>
+                        <#if tab.activated>
+                    <li class="active">
+                        <span>${tab.pageNumber}</span>
+                    </li>
+                        <#else >
+                     <li>
+                         <a href="${tab.url}">${tab.pageNumber}</a>
+                     </li>
+                        </#if>
+                    </#list>
+                    <#if pagination.isLastPage>
                     <li class="disabled"><span>»</span></li>
-                    <#else>
-                    <li><span><a href="/employeeList.html?page=${pageInfo.next}">»</a></span></li>
+                    <#else >
+                    <li><a href="${pagination.nexTab.url}">»</a></li>
                     </#if>
                 </ul>
             </div>

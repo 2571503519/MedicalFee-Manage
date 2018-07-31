@@ -38,6 +38,7 @@ public class MedicalDetailServiceImpl implements IMedicalDetailService {
         String keywords = "";
         String medicalCateId = "";
         String status = "";
+
         if (queryBean.getKeywords() != null) {
             keywords = queryBean.getKeywords();
         }

@@ -9,6 +9,7 @@ import com.jackaroo.spring_boot_demo.util.AjaxResponse;
 import com.jackaroo.spring_boot_demo.util.Constant;
 import com.jackaroo.spring_boot_demo.util.EmployeeQueryCondition;
 import com.jackaroo.spring_boot_demo.util.PageQueryBean;
+import com.jackaroo.spring_boot_demo.util.page.Pagination;
 import com.jackaroo.spring_boot_demo.vo.EmployeeVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,17 +97,20 @@ public class EmployeeController {
         PageQueryBean pageQueryBean = new PageQueryBean(pageNumber, pageSize);
         EmployeeQueryCondition queryCondition = new EmployeeQueryCondition(keywords, deptId, status);
         // 分页查询符合查询条件的所有职工
-        PageInfo<EmployeeVo> pageInfo = iEmployeeService.getEmployeeListConditionally(queryCondition, pageQueryBean);
+//        PageInfo<EmployeeVo> pageInfo = iEmployeeService.getEmployeeListConditionally(queryCondition, pageQueryBean);
+        Pagination<EmployeeVo> pagination = iEmployeeService.getEmployeeListConditionallyV2(queryCondition, pageQueryBean);
         // 查询所有正常状态的部门
         List<Department> departmentList = iDepartmentService.getDepartmentsByStatus(Constant.CommonStatus.NORMAL);
 
-        mv.addObject("employeeVoList", pageInfo.getList());
+//        mv.addObject("employeeVoList", pageInfo.getList());
+        mv.addObject("pagination", pagination);
+        mv.addObject("employeeVoList", pagination.getPageData());
         mv.addObject("departmentList", departmentList);
         mv.addObject("statusList", Constant.EmployeeStatus.values());
         mv.addObject("keywords", keywords);
         mv.addObject("deptId", deptId);
         mv.addObject("status", status);
-        mv.addObject("pageInfo", pageQueryBean);
+//        mv.addObject("pageInfo", pageQueryBean);
         return mv;
     }
 

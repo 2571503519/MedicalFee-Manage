@@ -25,4 +25,5 @@ public interface EmployeeMapper {
 
     Long getRowsCount();
 
+    Long getRowsCountConditionally(EmployeeQueryCondition condition);
 }

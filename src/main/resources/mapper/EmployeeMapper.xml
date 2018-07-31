@@ -93,5 +93,20 @@
     <select id="getRowsCount" parameterType="long" resultType="long" >
         select count(*) from <include refid="tableName"/>
     </select>
+    
+    <select id="getRowsCountConditionally" parameterType="com.jackaroo.spring_boot_demo.util.EmployeeQueryCondition" resultType="long">
+        select count(*) from <include refid="tableName"/>
+        <where>
+            <if test="keywords != null and keywords != ''">
+                or (emp_number = #{keywords} or `name` = #{keywords})
+            </if>
+            <if test="deptId != null">
+                and dept_id = #{deptId}
+            </if>
+            <if test="status != null">
+                and status = #{status, typeHandler=com.jackaroo.spring_boot_demo.typehandler.EmployeeStatusTypeHandler}
+            </if>
+        </where>
+    </select>
 
 </mapper>

@@ -18,6 +18,13 @@ public class PageConfig {
     private Integer tabListSize;
 
     private PageConfig(Long totalRows, Integer pageSize, String baseUrl, Integer tabListSize) {
+        if (totalRows < 1) {
+            throw new IllegalArgumentException("总记录数不能小于1");
+        }
+        if (pageSize < 1) {
+            throw new IllegalArgumentException("单页记录数不能小于1");
+        }
+
         this.totalRows = totalRows;
         this.pageSize = pageSize;
         this.baseUrl = baseUrl;

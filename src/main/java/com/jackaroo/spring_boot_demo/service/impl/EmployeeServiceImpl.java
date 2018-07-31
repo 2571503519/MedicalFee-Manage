@@ -9,7 +9,10 @@ import com.jackaroo.spring_boot_demo.util.AjaxResponse;
 import com.jackaroo.spring_boot_demo.util.Constant;
 import com.jackaroo.spring_boot_demo.util.EmployeeQueryCondition;
 import com.jackaroo.spring_boot_demo.util.PageQueryBean;
+import com.jackaroo.spring_boot_demo.util.page.PageConfig;
+import com.jackaroo.spring_boot_demo.util.page.Pagination;
 import com.jackaroo.spring_boot_demo.vo.EmployeeVo;
+import com.jackaroo.spring_boot_demo.vo.MedicalDetailVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,43 @@ public class EmployeeServiceImpl implements IEmployeeService {
     private EmployeeMapper employeeMapper;
 
 
+    @Override
+    public Pagination<EmployeeVo> getEmployeeListConditionallyV2(EmployeeQueryCondition condition, PageQueryBean pageQueryBean) {
+        PageHelper.startPage(pageQueryBean.getPageNumber(), pageQueryBean.getPageSize());
+        List<Employee> allEmployee = employeeMapper.getAllEmployee(condition);
+        List<EmployeeVo> employeeVoList = assembleEmployeeVo(allEmployee);
+
+        String keywords = "";
+        String deptId = "";
+        String status = "";
+
+        if (condition.getKeywords() != null) {
+            keywords = condition.getKeywords();
+        }
+        if (condition.getDeptId() != null) {
+            deptId = Long.toString(condition.getDeptId());
+        }
+        if (condition.getStatus() != null) {
+            status = Integer.toString(condition.getStatus().getId());
+        }
+
+        String baseUrl = "/employeeList.html?keywords=" + keywords
+                + "&dept_id=" + deptId + "&status=" + status;
+
+        Long rowsCount = employeeMapper.getRowsCountConditionally(condition);
+        PageConfig pageConfig = null;
+        if (rowsCount < 1) {
+            // （查询到符合条件的记录为0时）防止在设置当前页的时候，出现页码设置超出范围
+            pageConfig = PageConfig.create(1L, 5, baseUrl, 5);
+        } else {
+            pageConfig = PageConfig.create(rowsCount, 5, baseUrl, 5);
+        }
+        Pagination<EmployeeVo> pagination = Pagination.create(pageConfig);
+        pagination.setCurrentPageNumber(pageQueryBean.getPageNumber());
+        pagination.setPageData(employeeVoList);
+
+        return pagination;
+    }
 
     @Override
     public PageInfo<EmployeeVo> getEmployeeListConditionally(EmployeeQueryCondition condition, PageQueryBean pageQueryBean) {
